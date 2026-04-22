@@ -1,3 +1,4 @@
+// controllers/authController.js
 const authService = require("../services/authService");
 const generateToken = require("../utils/generateToken");
 
@@ -6,10 +7,14 @@ const register = async (req, res) => {
   try {
     const user = await authService.registerUser(req.body);
 
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     res.status(201).json({
-      message: "User registered successfully",
+      message:
+        user.role === "admin"
+          ? "Admin registered successfully"
+          : "User registered successfully",
+
       user,
       token,
     });
@@ -26,7 +31,7 @@ const login = async (req, res) => {
       req.body.password
     );
 
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     res.status(200).json({
       message: "Login successful",

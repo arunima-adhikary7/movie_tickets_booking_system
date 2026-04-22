@@ -7,6 +7,12 @@ import MovieDetails from './pages/MovieDetails.jsx'; // 👈 create this
 import CinemaList from './pages/CinemaList.jsx'; 
 import Signup from './pages/Signup.jsx'; 
 import Login from './pages/Login.jsx';
+import AddMovie from './pages/AddMovie.jsx'; 
+import AllMovies from './pages/AllMovies.jsx';
+import SeatSelection from './pages/SeatSelection.jsx';
+
+import SeatCountModal from './pages/SeatCountModal.jsx';
+import CheckoutPage from './pages/Checkoutpage.jsx';
 function App() {
   return (
    
@@ -16,6 +22,12 @@ function App() {
         <Route path="/movie/:id/cinemas" element={<CinemaList />} />
         <Route path="/signup" element={<Signup />} />
          <Route path="/login" element={<Login />} />
+         <Route path="/createmovie" element={<AddMovie />} />
+       <Route path="/getallmovies" element={<AllMovies />} />
+       <Route path="/seatselection" element={<SeatSelection />} />
+         <Route path="/s" element={<SeatCountModal />} />
+ <Route path="/checkout" element={<CheckoutPage />} />
+
       </Routes>
     
     

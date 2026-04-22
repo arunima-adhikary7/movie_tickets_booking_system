@@ -46,8 +46,47 @@ const getMovieById = async (req, res) => {
   }
 };
 
+//////////////////////////////////////////////////////
+// ⭐ ADD THIS (MISSING PART)
+// UPDATE MOVIE
+const updateMovie = async (req, res) => {
+  try {
+    const movie = await movieService.updateMovie(req.params.id, req.body);
+
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+
+    res.status(200).json({
+      message: "Movie updated successfully",
+      movie,
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// DELETE MOVIE
+const deleteMovie = async (req, res) => {
+  try {
+    const movie = await movieService.deleteMovie(req.params.id);
+
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+
+    res.status(200).json({
+      message: "Movie deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   addMovie,
   getMovies,
   getMovieById,
+  updateMovie,
+  deleteMovie,
 };
