@@ -1,28 +1,24 @@
 import mainLogo from "../../assets/main-icon.png";
-import { FaSearch, FaUser } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import map from "../../assets/pin.gif";
 import { useNavigate } from "react-router-dom";
-
-
 
 const Header = () => {
   const navigate = useNavigate();
 
-  // TEMP fallback (so app doesn't crash)
   const location = "Kolkata";
   const loading = false;
-  const auth = false;
-  const user = null;
 
   return (
     <div className="w-full text-sm bg-white">
-      
+
       {/* Top Navbar */}
       <div className="px-4 md:px-8">
         <div className="max-w-screen-xl mx-auto flex justify-between items-center py-3">
 
           {/* Left */}
           <div className="flex items-center space-x-4">
+
             <img
               onClick={() => navigate("/")}
               src={mainLogo}
@@ -38,6 +34,7 @@ const Header = () => {
               />
               <FaSearch className="absolute right-2 top-2.5 text-gray-500" />
             </div>
+
           </div>
 
           {/* Right */}
@@ -52,23 +49,14 @@ const Header = () => {
               )}
             </div>
 
-            {/* Auth */}
-            {auth ? (
-              <>
-                <span className="border rounded-full p-2">
-                  <FaUser />
-                </span>
-                <span className="cursor-pointer">
-                  Hi, {user?.name || "User"}
-                </span>
-              </>
-            ) : (
-              <button
-                className="bg-[#f84464] text-white px-4 py-1.5 rounded"
-              >
-                Sign in
-              </button>
-            )}
+            {/* Sign in Button */}
+            <button
+              onClick={() => navigate("/signup")}
+              className="bg-[#f84464] text-white px-4 py-1.5 rounded"
+            >
+              Sign in
+            </button>
+
           </div>
 
         </div>
@@ -97,7 +85,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* <SignInModel /> */}
     </div>
   );
 };
