@@ -1,19 +1,24 @@
-const movieService = require("../services/movieService.js");
+const movieService = require("../services/movieService");
 
-// ADD MOVIE
+// ADD MOVIE WITH IMAGE
 const addMovie = async (req, res) => {
   try {
-    const movie = await movieService.createMovie(req.body);
+    const movieData = {
+      ...req.body,
+      posterUrl: req.file?.path, // 🔥 Cloudinary URL
+    };
+
+    const movie = await movieService.createMovie(movieData);
 
     res.status(201).json({
       message: "Movie added successfully",
       movie,
     });
+
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
-
 // GET ALL MOVIES
 const getMovies = async (req, res) => {
   try {

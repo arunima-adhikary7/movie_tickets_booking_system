@@ -1,23 +1,34 @@
 const Movie = require("../models/Movie");
 
-// CREATE MOVIE
+// CREATE
 const createMovie = async (data) => {
-  const movie = await Movie.create(data);
-  return movie;
+  return await Movie.create(data);
 };
 
-// GET ALL MOVIES
+// GET ALL
 const getAllMovies = async () => {
   return await Movie.find();
 };
 
-// GET MOVIE BY ID
+// GET BY ID
 const getMovieById = async (id) => {
   return await Movie.findById(id);
+};
+
+// UPDATE
+const updateMovie = async (id, data) => {
+  return await Movie.findByIdAndUpdate(id, data, { new: true });
+};
+
+// DELETE
+const deleteMovie = async (id) => {
+  return await Movie.findByIdAndDelete(id);
 };
 
 module.exports = {
   createMovie,
   getAllMovies,
   getMovieById,
+  updateMovie,
+  deleteMovie,
 };

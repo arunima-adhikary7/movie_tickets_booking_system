@@ -26,9 +26,12 @@ const Home = () => {
           <h2 className="text-2xl font-bold">
             Recommended Movies
           </h2>
-          <span className="text-red-500 cursor-pointer hover:underline">
-            See All
-          </span>
+        <span
+  onClick={() => navigate("/getallmovies")}
+  className="text-red-500 cursor-pointer hover:underline"
+>
+  See All
+</span>
         </div>
 
         {/* Grid */}

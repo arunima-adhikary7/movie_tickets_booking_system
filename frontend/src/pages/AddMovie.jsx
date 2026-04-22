@@ -10,7 +10,7 @@ const AddMovie = () => {
     const user = JSON.parse(localStorage.getItem("user"));
 
     if (!user || user.role !== "admin") {
-      navigate("/"); // block non-admin
+      navigate("/");
     }
   }, [navigate]);
 
@@ -21,11 +21,23 @@ const AddMovie = () => {
     language: "",
     releaseDate: "",
     genre: "",
-    posterUrl: "",
   });
+
+  const [poster, setPoster] = useState(null); // 🔥 FILE STATE
+  const [preview, setPreview] = useState(""); // 🔥 IMAGE PREVIEW
 
   const handleChange = (e) => {
     setMovie({ ...movie, [e.target.name]: e.target.value });
+  };
+
+  // 🔥 HANDLE FILE CHANGE
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setPoster(file);
+
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -34,25 +46,37 @@ const AddMovie = () => {
     try {
       const token = localStorage.getItem("token");
 
-      await API.post(
-        "/movies/createmovie",
-        {
-          ...movie,
-          duration: Number(movie.duration),
-          genre: movie.genre
+      // 🔥 USE FORMDATA
+      const formData = new FormData();
+
+      formData.append("title", movie.title);
+      formData.append("description", movie.description);
+      formData.append("duration", movie.duration);
+      formData.append("language", movie.language);
+      formData.append("releaseDate", movie.releaseDate);
+
+      // convert genre to array
+      formData.append(
+        "genre",
+        JSON.stringify(
+          movie.genre
             ? movie.genre.split(",").map((g) => g.trim())
-            : [],
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+            : []
+        )
       );
 
-      alert("🎬 Movie Added Successfully");
+      formData.append("poster", poster); // 🔥 MUST MATCH BACKEND
 
+      await API.post("/movies/createmovie", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      alert("🎬 Movie Added Successfully");
       navigate("/");
+
     } catch (err) {
       console.log(err.response?.data || err.message);
       alert(err.response?.data?.message || "Error adding movie");
@@ -98,7 +122,7 @@ const AddMovie = () => {
 
           <input
             name="language"
-            placeholder="Language (e.g. Hindi, English)"
+            placeholder="Language"
             value={movie.language}
             onChange={handleChange}
             className="w-full p-3 rounded bg-white/10 text-white border"
@@ -116,19 +140,29 @@ const AddMovie = () => {
 
           <input
             name="genre"
-            placeholder="Genre (comma separated: Action, Drama)"
+            placeholder="Genre (Action, Drama)"
             value={movie.genre}
             onChange={handleChange}
             className="w-full p-3 rounded bg-white/10 text-white border"
           />
 
+          {/* 🔥 FILE INPUT */}
           <input
-            name="posterUrl"
-            placeholder="Poster Image URL"
-            value={movie.posterUrl}
-            onChange={handleChange}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
             className="w-full p-3 rounded bg-white/10 text-white border"
+            required
           />
+
+          {/* 🔥 PREVIEW */}
+          {preview && (
+            <img
+              src={preview}
+              alt="preview"
+              className="w-full h-60 object-cover rounded-lg mt-2"
+            />
+          )}
 
           <button
             type="submit"
