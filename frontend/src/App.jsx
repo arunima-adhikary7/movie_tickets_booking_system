@@ -15,6 +15,7 @@ import SeatCountModal from './pages/SeatCountModal.jsx';
 import CheckoutPage from './pages/Checkoutpage.jsx';
 import ContactDetails from './pages/ContactDetails.jsx';
 import SelectCinema from "./pages/SelectCinema";
+import CreateShow from "./pages/CreateShow.jsx";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
        <Route path="/contactdetails" element={<ContactDetails />} />
 
         <Route path="/movie/:id/cinemas" element={<SelectCinema />} />
+         <Route path="/createshow" element={<CreateShow />} />
       </Routes>
     
     

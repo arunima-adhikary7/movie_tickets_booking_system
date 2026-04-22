@@ -1,4 +1,4 @@
-const showService = require("../services/showService");
+const showService = require("../services/showService.js");
 
 // ADD SHOW
 const addShow = async (req, res) => {
@@ -45,9 +45,21 @@ const getShowById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+const getShowsByMovie = async (req, res) => {
+  try {
+    const shows = await showService.getShowsByMovie(req.params.movieId);
 
+    res.status(200).json({
+      message: "Shows fetched successfully",
+      shows,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 module.exports = {
   addShow,
   getShows,
   getShowById,
+  getShowsByMovie,
 };

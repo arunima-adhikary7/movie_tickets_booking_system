@@ -1,71 +1,84 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
-const cinemas = [
-  {
-    id: 1,
-    name: "PVR Cinemas",
-    location: "City Centre",
-    timings: ["10:00 AM", "1:00 PM", "4:00 PM", "9:00 PM"],
-  },
-  {
-    id: 2,
-    name: "INOX",
-    location: "Mall Road",
-    timings: ["11:00 AM", "2:30 PM", "6:00 PM", "9:30 PM"],
-  },
-  {
-    id: 3,
-    name: "Cinepolis",
-    location: "City Mall",
-    timings: ["9:00 AM", "12:00 PM", "3:00 PM", "8:00 PM"],
-  },
-];
+import API from "../service/API";
 
 const SelectCinema = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // movieId
   const navigate = useNavigate();
+
+  const [shows, setShows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchShows = async () => {
+      try {
+        const res = await API.get(`/shows/movie/${id}`);
+        setShows(res.data.shows);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchShows();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading cinemas...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] p-6">
 
       <h2 className="text-2xl font-bold mb-6">
-        🎬 Select Cinema
+        🎬 Select Cinema & Show Time
       </h2>
 
       <div className="space-y-5 max-w-4xl mx-auto">
 
-        {cinemas.map((cinema) => (
+        {shows.map((show) => (
           <div
-            key={cinema.id}
+            key={show._id}
             className="bg-white p-5 rounded-xl shadow"
           >
 
-            {/* Cinema Name */}
+            {/* CINEMA NAME */}
             <h3 className="text-lg font-semibold">
-              {cinema.name}
+              {show.cinema.name}
             </h3>
 
             <p className="text-sm text-gray-500">
-              {cinema.location}
+              {show.cinema.location?.city}
             </p>
 
-            {/* Timings */}
+            {/* PRICE */}
+            <p className="text-sm mt-1 text-gray-600">
+              💰 Price: ₹{show.price}
+            </p>
+
+            {/* TIME BUTTON */}
             <div className="flex flex-wrap gap-3 mt-4">
 
-              {cinema.timings.map((time, index) => (
-                <button
-                  key={index}
-                  onClick={() =>
-                    navigate(`/movie/${id}/seats`, {
-                      state: { cinema: cinema.name, time },
-                    })
-                  }
-                  className="px-4 py-2 border border-green-500 text-green-600 rounded hover:bg-green-500 hover:text-white"
-                >
-                  {time}
-                </button>
-              ))}
+              <button
+                onClick={() =>
+                  navigate(`/movie/${id}/seats`, {
+                    state: {
+                      showId: show._id,
+                      cinema: show.cinema.name,
+                      time: show.showTime,
+                      price: show.price,
+                    },
+                  })
+                }
+                className="px-4 py-2 border border-green-500 text-green-600 rounded hover:bg-green-500 hover:text-white"
+              >
+                {new Date(show.showTime).toLocaleString()}
+              </button>
 
             </div>
           </div>

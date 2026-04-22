@@ -9,7 +9,10 @@ router.post("/", showController.addShow);
 // GET ALL SHOWS
 router.get("/", showController.getShows);
 
-// GET SHOW BY ID
+// ✅ MUST BE FIRST (specific route)
+router.get("/movie/:movieId", showController.getShowsByMovie);
+
+// GET SHOW BY ID (keep last among GET routes)
 router.get("/:id", showController.getShowById);
 
 module.exports = router;
