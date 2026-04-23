@@ -34,20 +34,14 @@ const SelectCinema = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] p-6">
-
       <h2 className="text-2xl font-bold mb-6">
         🎬 Select Cinema & Show Time
       </h2>
 
       <div className="space-y-5 max-w-4xl mx-auto">
-
         {shows.map((show) => (
-          <div
-            key={show._id}
-            className="bg-white p-5 rounded-xl shadow"
-          >
+          <div key={show._id} className="bg-white p-5 rounded-xl shadow">
 
-            {/* CINEMA NAME */}
             <h3 className="text-lg font-semibold">
               {show.cinema.name}
             </h3>
@@ -56,22 +50,20 @@ const SelectCinema = () => {
               {show.cinema.location?.city}
             </p>
 
-            {/* PRICE */}
             <p className="text-sm mt-1 text-gray-600">
               💰 Price: ₹{show.price}
             </p>
 
-            {/* TIME BUTTON */}
             <div className="flex flex-wrap gap-3 mt-4">
-
               <button
                 onClick={() =>
-                  navigate(`/movie/${id}/seats`, {
+                  navigate(`/s`, {
                     state: {
                       showId: show._id,
                       cinema: show.cinema.name,
                       time: show.showTime,
                       price: show.price,
+                      movieId: id
                     },
                   })
                 }
@@ -79,11 +71,10 @@ const SelectCinema = () => {
               >
                 {new Date(show.showTime).toLocaleString()}
               </button>
-
             </div>
+
           </div>
         ))}
-
       </div>
     </div>
   );

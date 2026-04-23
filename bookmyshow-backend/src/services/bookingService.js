@@ -4,7 +4,12 @@ const paymentGateway = require("../utils/paymentGateway");
 
 // CREATE BOOKING (INITIATE PAYMENT)
 const createBooking = async ({ userId, showId, seatIds, price }) => {
-  const seats = await Seat.find({ _id: { $in: seatIds }, show: showId });
+
+  // ✅ FIX: use seatNumber instead of _id
+  const seats = await Seat.find({
+    seatNumber: { $in: seatIds },
+    show: showId,
+  });
 
   if (seats.length !== seatIds.length) {
     throw new Error("Invalid seats");
@@ -16,50 +21,54 @@ const createBooking = async ({ userId, showId, seatIds, price }) => {
     }
   }
 
-  // LOCK SEATS TEMPORARILY
+  // 🔒 LOCK SEATS
   await Seat.updateMany(
-    { _id: { $in: seatIds } },
+    { seatNumber: { $in: seatIds }, show: showId },
     { isLocked: true, lockedAt: new Date() }
   );
 
-  // CREATE FAKE PAYMENT
-  const payment = paymentGateway.createPayment(seatIds.length * price);
+  // 💳 PAYMENT
+  const totalAmount = seatIds.length * price;
+  const payment = paymentGateway.createPayment(totalAmount);
 
-  // CREATE BOOKING (PENDING)
+  // 🧾 CREATE BOOKING (store seatNumbers)
   const booking = await Booking.create({
     user: userId,
     show: showId,
-    seats: seatIds,
-    totalAmount: payment.amount,
+    seats: seatIds, // ✅ ["A1", "C7"]
+    totalPrice: totalAmount,
     status: "PENDING",
   });
 
   return { booking, payment };
 };
 
+
 // CONFIRM PAYMENT
 const confirmBooking = async (bookingId, paymentId) => {
   const payment = paymentGateway.verifyPayment(paymentId);
+
   const booking = await Booking.findById(bookingId);
 
   if (!booking) throw new Error("Booking not found");
 
   if (payment.status === "SUCCESS") {
-    // CONFIRM BOOKING
+
     booking.status = "CONFIRMED";
     await booking.save();
 
-    // MARK SEATS AS BOOKED
+    // ✅ FIX: update using seatNumber
     await Seat.updateMany(
-      { _id: { $in: booking.seats } },
+      { seatNumber: { $in: booking.seats } },
       { isBooked: true, isLocked: false }
     );
 
     return booking;
+
   } else {
-    // RELEASE SEATS
+
     await Seat.updateMany(
-      { _id: { $in: booking.seats } },
+      { seatNumber: { $in: booking.seats } },
       { isLocked: false }
     );
 
@@ -70,7 +79,23 @@ const confirmBooking = async (bookingId, paymentId) => {
   }
 };
 
+
+// GET BOOKING BY ID
+const getBookingById = async (bookingId) => {
+  return await Booking.findById(bookingId)
+    .populate({
+      path: "show",
+      populate: [
+        { path: "movie" },
+        { path: "theatre" }
+      ]
+    });
+    // ❌ REMOVE THIS:
+    // .populate("seats")  ← seats are strings now
+};
+
 module.exports = {
   createBooking,
   confirmBooking,
+  getBookingById,
 };

@@ -1,16 +1,43 @@
 import React, { useState, useEffect } from "react";
-import { CreditCard, Smartphone, Landmark, Wallet, Ticket, Info, ChevronDown } from "lucide-react";
+import { CreditCard, Smartphone, Landmark, Wallet, Ticket } from "lucide-react";
+import { useParams } from "react-router-dom";
 
 export default function CheckoutPage() {
-  const [timeLeft, setTimeLeft] = useState(600); // 10-minute countdown
-  const [selectedMethod, setSelectedMethod] = useState("upi");
+  const { id } = useParams();
 
-  // Format time (MM:SS)
+  const [timeLeft, setTimeLeft] = useState(600);
+  const [selectedMethod, setSelectedMethod] = useState("upi");
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // TIMER
   useEffect(() => {
     if (timeLeft <= 0) return;
     const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     return () => clearInterval(timer);
   }, [timeLeft]);
+
+  // FETCH DATA
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/bookings/summary/${id}`
+        );
+
+        const data = await res.json();
+        console.log("API RESPONSE 👉", data);
+
+        setOrder(data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setLoading(false);
+      }
+    };
+
+    if (id) fetchOrder();
+  }, [id]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -18,174 +45,104 @@ export default function CheckoutPage() {
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
+  if (loading) {
+    return <h2 style={{ textAlign: "center" }}>Loading...</h2>;
+  }
+
+  if (!order) {
+    return <h2 style={{ textAlign: "center" }}>No Order Found</h2>;
+  }
+
+  // ✅ SAFE VALUES (FIXED CRASHES)
+  const seats = order.seats || [];
+  const ticketPrice = order.ticketPrice || 0;
+  const convenienceFee = order.convenienceFee || 0;
+  const totalAmount = ticketPrice + convenienceFee;
+
   return (
-    <div className="min-h-screen bg-[#F2F5F9] font-sans text-[#333]">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="bg-red-600 p-1 rounded">
-              <Ticket className="text-white w-6 h-6" />
-            </div>
-            <h1 className="text-2xl font-black text-[#333545] tracking-tighter">bookmyshow</h1>
+    <div className="min-h-screen bg-gray-100 p-6">
+
+      {/* HEADER */}
+      <div className="flex justify-between bg-white p-4 rounded shadow">
+        <h1 className="text-xl font-bold flex items-center gap-2">
+          <Ticket /> BookMyShow
+        </h1>
+        <span className="text-red-600 font-bold">{formatTime(timeLeft)}</span>
+      </div>
+
+      <div className="flex gap-6 mt-6">
+
+        {/* LEFT */}
+        <div className="flex-1 bg-white p-6 rounded shadow">
+
+          <h2 className="font-bold mb-4">Payment</h2>
+
+          <div className="grid grid-cols-4 border">
+            <PaymentTab active={selectedMethod==="upi"} onClick={()=>setSelectedMethod("upi")} icon={<Smartphone/>} label="UPI"/>
+            <PaymentTab active={selectedMethod==="card"} onClick={()=>setSelectedMethod("card")} icon={<CreditCard/>} label="Card"/>
+            <PaymentTab active={selectedMethod==="net"} onClick={()=>setSelectedMethod("net")} icon={<Landmark/>} label="Net"/>
+            <PaymentTab active={selectedMethod==="wallet"} onClick={()=>setSelectedMethod("wallet")} icon={<Wallet/>} label="Wallet"/>
           </div>
-          <div className="text-right">
-            <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Time Left</p>
-            <p className="text-lg font-mono font-bold text-red-600 leading-none">{formatTime(timeLeft)}</p>
+
+          <div className="mt-4">
+            {selectedMethod === "upi" && (
+              <input
+                placeholder="Enter UPI ID"
+                className="border p-2 w-full"
+              />
+            )}
           </div>
         </div>
-      </header>
 
-      <main className="max-w-5xl mx-auto p-4 md:p-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          
-          {/* Left Side: Payment Selection */}
-          <div className="flex-1 space-y-6">
-            <section className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="bg-yellow-50 p-3 flex items-center gap-3 border-b border-yellow-100">
-                <Info className="w-4 h-4 text-yellow-700" />
-                <p className="text-xs text-yellow-800">
-                  Tickets once booked <b>cannot be cancelled</b> or exchanged.
-                </p>
-              </div>
+        {/* RIGHT */}
+        <div className="w-[300px] bg-white p-6 rounded shadow">
 
-              <div className="p-6">
-                <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
-                  Unlock Offers or Apply Promocodes
-                </h2>
-                <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 flex justify-between items-center hover:border-red-400 cursor-pointer transition-colors">
-                  <p className="text-sm text-gray-500 italic">Select an offer to save more</p>
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
-                </div>
-              </div>
-            </section>
+          <h2 className="font-bold text-red-500 mb-3">Order Summary</h2>
 
-            <section className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
-                Payment Options
-              </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-4 border rounded-lg">
-                <PaymentTab 
-                  active={selectedMethod === 'upi'} 
-                  onClick={() => setSelectedMethod('upi')}
-                  icon={<Smartphone className="w-5 h-5" />} 
-                  label="UPI" 
-                />
-                <PaymentTab 
-                  active={selectedMethod === 'card'} 
-                  onClick={() => setSelectedMethod('card')}
-                  icon={<CreditCard className="w-5 h-5" />} 
-                  label="Card" 
-                />
-                <PaymentTab 
-                  active={selectedMethod === 'net'} 
-                  onClick={() => setSelectedMethod('net')}
-                  icon={<Landmark className="w-5 h-5" />} 
-                  label="Net Banking" 
-                />
-                <PaymentTab 
-                  active={selectedMethod === 'wallet'} 
-                  onClick={() => setSelectedMethod('wallet')}
-                  icon={<Wallet className="w-5 h-5" />} 
-                  label="Wallets" 
-                />
-              </div>
+          <h3 className="font-bold">{order.movie}</h3>
+          <p>{order.theatre}</p>
+          <p>{order.screen}</p>
 
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
-                {selectedMethod === 'upi' && (
-                  <div className="space-y-4">
-                    <p className="text-sm font-semibold">Pay via UPI ID</p>
-                    <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        placeholder="username@bank" 
-                        className="flex-1 border rounded px-3 py-2 focus:ring-1 focus:ring-red-500 outline-none"
-                      />
-                      <button className="bg-red-500 text-white px-6 py-2 rounded font-medium text-sm">Verify</button>
-                    </div>
-                  </div>
-                )}
-                {selectedMethod === 'card' && <p className="text-sm text-gray-500">Card details input would go here...</p>}
-              </div>
-            </section>
+          {/* ✅ SAFE JOIN */}
+          <p>{seats.length > 0 ? seats.join(", ") : "No seats"}</p>
+
+          <div className="mt-4 space-y-2">
+
+            <div className="flex justify-between">
+              <span>Ticket Price</span>
+              <span>₹{ticketPrice}</span>
+            </div>
+
+            <div className="flex justify-between">
+              <span>Convenience Fee</span>
+              <span>₹{convenienceFee}</span>
+            </div>
+
+            <div className="flex justify-between font-bold border-t pt-2">
+              <span>Total</span>
+              <span>₹{totalAmount}</span>
+            </div>
+
           </div>
 
-          {/* Right Side: Order Summary */}
-          <aside className="w-full lg:w-[380px]">
-            <div className="bg-white rounded-lg shadow-sm sticky top-24">
-              <div className="p-5 border-b border-dashed">
-                <h2 className="uppercase text-xs font-bold text-red-600 tracking-widest mb-3">Order Summary</h2>
-                <div className="flex gap-4">
-                  <div className="relative">
-                    <img 
-                      src="https://m.media-amazon.com/images/M/MV5BMTc5MDE2ODcwNV5BMl5BanBnXkFtZTgwMzI2NzQ2NzM@._V1_.jpg" 
-                      alt="movie" 
-                      className="w-16 h-24 object-cover rounded shadow-md"
-                    />
-                    <span className="absolute bottom-1 right-1 bg-black/60 text-[10px] text-white px-1 rounded">UA</span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg leading-tight">Avengers: Endgame</h3>
-                    <p className="text-xs text-gray-500 mt-1">Hindi, 2D</p>
-                    <p className="text-xs text-gray-600">PVR: City Mall, Mumbai</p>
-                    <p className="text-xs font-semibold mt-1">SCREEN 3 | Gold - A1, A2</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-5 space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Ticket Price (2 Tickets)</span>
-                  <span className="font-medium">₹400.00</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 flex items-center gap-1">
-                    Convenience Fees <Info className="w-3 h-3 cursor-help" />
-                  </span>
-                  <span className="font-medium">₹56.40</span>
-                </div>
-                <div className="pt-3 border-t border-dashed mt-3">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-gray-700">Amount Payable</span>
-                    <span className="font-black text-xl">₹456.40</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-5 bg-blue-50 rounded-b-lg">
-                <button className="w-full bg-[#F84464] text-white py-4 rounded-lg font-bold text-lg shadow-lg hover:bg-[#d63955] transition-transform active:scale-[0.98]">
-                  Proceed to Pay
-                </button>
-                <p className="text-[10px] text-center mt-3 text-gray-400 leading-tight">
-                  By clicking "Proceed to Pay", you agree to the Terms & Conditions.
-                </p>
-              </div>
-            </div>
-          </aside>
+          <button className="w-full bg-red-500 text-white mt-4 py-2 rounded">
+            Pay Now
+          </button>
 
         </div>
-      </main>
-
-      <footer className="mt-12 py-8 bg-white border-t text-center">
-        <p className="text-xs text-gray-400 uppercase tracking-widest font-bold">100% SECURE PAYMENT</p>
-      </footer>
+      </div>
     </div>
   );
 }
 
-// Sub-component for Payment Tabs
 function PaymentTab({ active, icon, label, onClick }) {
   return (
-    <button 
+    <button
       onClick={onClick}
-      className={`flex flex-col items-center justify-center p-4 gap-2 border-r last:border-r-0 transition-all
-      ${active ? 'bg-red-50 text-red-600 border-b-2 border-b-red-600' : 'text-gray-500 hover:bg-gray-50'}`}
+      className={`p-3 ${active ? "bg-red-200" : ""}`}
     >
       {icon}
-      <span className="text-[10px] font-bold uppercase">{label}</span>
+      <p className="text-xs">{label}</p>
     </button>
   );
 }

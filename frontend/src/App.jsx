@@ -30,7 +30,7 @@ function App() {
        <Route path="/getallmovies" element={<AllMovies />} />
        <Route path="/seatselection" element={<SeatSelection />} />
         <Route path="/s" element={<SeatCountModal />} />
-       <Route path="/checkout" element={<CheckoutPage />} />
+       <Route path="/checkout/:id" element={<CheckoutPage />} />
        <Route path="/contactdetails" element={<ContactDetails />} />
 
         <Route path="/movie/:id/cinemas" element={<SelectCinema />} />
